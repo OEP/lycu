@@ -1,13 +1,14 @@
 import os
+import errno
 
 DEFAULT_SETTINGS = {
   'user_id': '0',
   'key': '',
 }
 
-RCFILES = (
+RCFILES = [
   os.path.join(os.environ.get('HOME'), '.lycurc')
-)
+]
 
 class Settings(object):
   
@@ -40,5 +41,6 @@ settings = Settings(DEFAULT_SETTINGS)
 for rcfile in RCFILES:
   try:
     settings.update_from_rcfile(rcfile)
-  except IOError:
-    pass
+  except IOError as e:
+    if e.errno != errno.ENOENT:
+      raise
