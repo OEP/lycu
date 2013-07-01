@@ -4,19 +4,25 @@ from gutter.channel import post_sync, pre_sync
 
 from . import lyre
 
+root = None
+
 @receiver(post_sync)
-def hello(signal, sender, **kwargs):
-  print "Hello!"
+def hello(signal, sender, raw_timeline={}):
+  d = raw_timeline['sched_current']
+  d = d['song_data']
+  d = d[0]
+  d = d['song_title']
+  print sender, d
 
 def main(stdscr):
-  from gutter.client import RainwaveClient
-  ch = client.channels[0]
-  ch.start_sync()
-#  stdscr.addstr("Hello, world! ")
-#  stdscr.addstr("FOO")
-#  stdscr.refresh()
+  global root
+  root = stdscr 
+
+  for ch in lyre.client.channels:
+    ch.start_sync()
+
   input()
 
 if __name__ == "__main__":
   #curses.wrapper(main)
-  print lyre.client.user_id, lyre.client.key
+  main(3)
