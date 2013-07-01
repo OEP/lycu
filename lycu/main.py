@@ -3,6 +3,7 @@ from gutter.dispatch import receiver
 from gutter.channel import post_sync, pre_sync
 
 from . import lyre
+from .window import Window
 
 root = None
 
@@ -24,7 +25,7 @@ def on_sync(signal, sender, raw_timeline={}):
 
 def main(stdscr):
   global root
-  root = stdscr 
+  root = Window(stdscr)
 
   for ch in lyre.client.channels:
     ch.start_sync()
