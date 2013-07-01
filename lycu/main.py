@@ -7,12 +7,20 @@ from . import lyre
 root = None
 
 @receiver(post_sync)
-def hello(signal, sender, raw_timeline={}):
+def on_sync(signal, sender, raw_timeline={}):
   d = raw_timeline['sched_current']
   d = d['song_data']
   d = d[0]
-  d = d['song_title']
-  print sender, d
+  song_title = d['song_title']
+  album_name = d['album_name']
+  label = "%s - %s" % (song_title, album_name)
+  y, x = sender.id, 0
+  line = "%s:\t%s" % (sender.name, label)
+
+  root.move(y, x)
+  root.clrtoeol()
+  root.addstr(sender.id, 0, line)
+  root.refresh()
 
 def main(stdscr):
   global root
@@ -24,5 +32,4 @@ def main(stdscr):
   input()
 
 if __name__ == "__main__":
-  #curses.wrapper(main)
-  main(3)
+  curses.wrapper(main)
