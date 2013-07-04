@@ -21,11 +21,11 @@ class Window(object):
   def height(self):
     return self.size[0]
 
-  def repaint(self):
-    self.draw()
+  def repaint(self, context):
+    self.draw(context)
     self.refresh()
 
-  def draw(self):
+  def draw(self, context=None):
     pass 
 
   def __getattr__(self, name):
