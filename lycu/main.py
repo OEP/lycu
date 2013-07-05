@@ -11,7 +11,12 @@ context = Context.get_default()
 
 @receiver(post_sync)
 def on_sync(signal, sender, **kwargs):
-  root.repaint(context)
+  try:
+    root.repaint(context)
+  except Exception as e:
+    with open('lycu.log', 'w') as fp:
+      import traceback
+      traceback.print_exc(None, fp)
 
 def main(stdscr):
   global root

@@ -2,6 +2,7 @@ from collections import namedtuple
 
 from .window import Window
 from . import lyre
+from .util import fixed_width_suffix
 
 class RootWindow(Window):
   def __init__(self, win):
@@ -28,7 +29,7 @@ class ChannelWindow(Window):
 class ChannelDetail(Window):
   def __init__(self, win):
     super(ChannelDetail, self).__init__(win)
-    self.current_election = ElectionWindow(self.subwin(self.height, 20, 1, 0))
+    self.next_elections = []
 
   def draw(self, context):
     channel = [ch
@@ -36,8 +37,15 @@ class ChannelDetail(Window):
       if ch.id == context.current_channel]
     channel = channel[0]
 
-    self.current_election.election = channel.schedule_current
-    self.current_election.repaint(context)
+    self.next_elections = []
+    y = 1
+    height = int(self.height / len(channel.schedule_next))
+    for sched in channel.schedule_next:
+      w = ElectionWindow(self.subwin(height, 30, y, 0))
+      w.election = sched
+      self.next_elections.append(w)
+      w.repaint(context)
+      y += 30
 
 class ElectionWindow(Window):
   def __init__(self, win):
@@ -45,10 +53,16 @@ class ElectionWindow(Window):
     self.election = None
 
   def draw(self, context):
-    y, x = self.getbegyx()
     if not self.election:
       return
+    self.reset_cursor()
     for song in self.election.songs:
-      self.move(y, 0)
-      self.addstr(str(song.title))
-      y += 1
+      rating = " {}:{}".format(song.rating or 'N/A', song.rating_avg)
+      line = fixed_width_suffix(song.title, rating, self.width)
+      self.add_line("{}".format(line))
+      rating = " {}:{}".format(song.album.rating_user or 'N/A',
+        song.album.rating_avg)
+      line = fixed_width_suffix(song.album.name, rating, self.width)
+      self.add_line("{}".format(line))
+      self.add_line(", ".join([x.name for x in song.artists]))
+      self.next_line()
