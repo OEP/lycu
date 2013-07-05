@@ -1,5 +1,4 @@
 import curses
-from collections import namedtuple
 from gutter.dispatch import receiver
 from gutter.channel import post_sync, pre_sync
 
