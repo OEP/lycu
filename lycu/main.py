@@ -1,4 +1,5 @@
 import curses
+import sys
 from gutter.dispatch import receiver
 from gutter.channel import post_sync, pre_sync
 
@@ -26,7 +27,10 @@ def main(stdscr):
   for ch in lyre.client.channels:
     ch.start_sync()
 
-  raw_input()
+  while True:
+    c = root.win.getch()
+    root.dispatch_key(context, c)
+
 
 if __name__ == "__main__":
   curses.wrapper(main)

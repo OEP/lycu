@@ -7,16 +7,14 @@ from .util import fixed_width_suffix
 class RootWindow(Window):
   def __init__(self, win):
     super(RootWindow, self).__init__(win)
-    self.channel_menu = ChannelWindow(self.subwin(1, self.width, 0, 0))
-    self.channel_detail = ChannelDetail(
-      self.subwin(self.height-1, self.width, 1, 0))
 
-  def draw(self, context):
-    self.channel_menu.repaint(context)
-    self.channel_detail.repaint(context)
+    self.children['channels'] = ChannelWindow(self.subwin(1, self.width, 0, 0))
+    self.children['detail'] = ChannelDetail(
+      self.subwin(self.height-2, self.width, 1, 0))
+    self.children['command'] = CommandWindow(self.subwin(1, self.width,
+      self.height-1, 0))
 
 class ChannelWindow(Window):
-  
   def draw(self, context):
     self.move(0, 0)
     self.clrtoeol()
@@ -29,7 +27,6 @@ class ChannelWindow(Window):
 class ChannelDetail(Window):
   def __init__(self, win):
     super(ChannelDetail, self).__init__(win)
-    self.next_elections = []
 
   def draw(self, context):
     channel = [ch
@@ -37,15 +34,39 @@ class ChannelDetail(Window):
       if ch.id == context.current_channel]
     channel = channel[0]
 
-    self.next_elections = []
+    self.children = {}
     y = 1
     height = int(self.height / len(channel.schedule_next))
-    for sched in channel.schedule_next:
+    for i, sched in enumerate(channel.schedule_next):
+      name = 'next{}'.format(i)
       w = ElectionWindow(self.subwin(height, 30, y, 0))
       w.election = sched
-      self.next_elections.append(w)
+      self.children[name] = w
       w.repaint(context)
       y += 30
+
+class CommandWindow(Window):
+  def __init__(self, win):
+    super(CommandWindow, self).__init__(win)
+    self.buffer = ""
+
+  @property
+  def active(self):
+    return len(self.buffer) and self.buffer[0] == ":"
+
+  def on_key(self, context, key):
+    if self.active and key < 256:
+      self.buffer += chr(key)
+      return True
+    elif key == ord(":"):
+      self.buffer = chr(key)
+      return True
+    return False
+
+  def draw(self, context):
+    self.reset_cursor()
+    self.add_line(self.buffer)
+
 
 class ElectionWindow(Window):
   def __init__(self, win):
