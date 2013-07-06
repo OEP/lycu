@@ -28,6 +28,8 @@ class ChannelWindow(Window):
 class ChannelDetail(Window):
   def __init__(self, win):
     super(ChannelDetail, self).__init__(win)
+    self.children['election'] = ElectionWindow(
+      self.subwin(self.height, 30, 1, 0))
 
   def draw(self, context):
     channel = [ch
@@ -35,16 +37,8 @@ class ChannelDetail(Window):
       if ch.id == context.current_channel]
     channel = channel[0]
 
-    self.children = {}
-    y = 1
-    height = int(self.height / len(channel.schedule_next))
-    for i, sched in enumerate(channel.schedule_next):
-      name = 'next{}'.format(i)
-      w = ElectionWindow(self.subwin(height, 30, y, 0))
-      w.election = sched
-      self.children[name] = w
-      w.repaint(context)
-      y += 30
+    sched = channel.schedule_next[0]
+    self.children['election'].election = sched
 
 class CommandWindow(Window):
   def __init__(self, win):
