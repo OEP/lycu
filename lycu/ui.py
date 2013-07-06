@@ -1,3 +1,4 @@
+import curses
 from collections import namedtuple
 
 from .window import Window
@@ -49,14 +50,27 @@ class CommandWindow(Window):
   def __init__(self, win):
     super(CommandWindow, self).__init__(win)
     self.buffer = ""
+    self.target = 0
 
   @property
   def active(self):
     return len(self.buffer) and self.buffer[0] == ":"
 
   def on_key(self, context, key):
-    if self.active and key < 256:
+    #self.buffer = str(key)
+    #return True
+    if self.active and key == 10: ## ENTER
+      self.buffer = ""
+      ## TODO: Execute command
+      return True
+    elif self.active and key == 27: ## ESC
+      self.buffer = ""
+      return True
+    elif self.active and key < 256:
       self.buffer += chr(key)
+      return True
+    elif self.active and key == curses.KEY_BACKSPACE:
+      self.buffer = self.buffer[:-1]
       return True
     elif key == ord(":"):
       self.buffer = chr(key)

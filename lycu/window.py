@@ -28,8 +28,9 @@ class Window(object):
     return self.win.getyx()
 
   def add_line(self, s):
-    self.win.addnstr(s.encode('ascii', 'ignore'), self.width)
-    if len(s) < self.width and self.cursor[0] < self.height-1:
+    n = self.width - self.cursor[1]
+    self.win.addnstr(s.encode('ascii', 'ignore'), n)
+    if len(s) < n and self.cursor[0] < self.height-1:
       self.next_line()
 
   def add_child(self, window):
