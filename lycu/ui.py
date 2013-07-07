@@ -56,6 +56,8 @@ class CommandWindow(Window):
     super(CommandWindow, self).__init__(win)
     self.buffer = ""
     self.error = ""
+    self.history = []
+    self.history_position = None
 
   @property
   def active(self):
@@ -65,11 +67,19 @@ class CommandWindow(Window):
   def has_error(self):
     return len(self.error) > 0
 
+  def clear_all(self):
+    self.error = ""
+    self.buffer = ""
+    self.history_memory = ""
+    self.history_position = None
+
   def on_key(self, context, key):
-    #self.buffer = str(key)
+    #self.buffer = ":" + str(key)
     #return True
     if self.active and key == 10: ## ENTER
       try:
+        self.history.append(self.buffer)
+        self.history_position = None
         cmd = self.buffer[1:]
         self.buffer = ""
         commands.execute(cmd, context)
@@ -77,13 +87,34 @@ class CommandWindow(Window):
         self.error = e.message
       return True
     elif self.active and key == 27: ## ESC
-      self.buffer = ""
+      self.clear_all()
       return True
     elif self.active and key < 256:
       self.buffer += chr(key)
       return True
     elif self.active and key == curses.KEY_BACKSPACE:
       self.buffer = self.buffer[:-1]
+      return True
+    elif key == curses.KEY_UP:
+      if len(self.history) == 0:
+        return False
+      elif self.history_position is None:
+        self.history_memory = self.buffer
+        self.history_position = len(self.history) - 1
+      elif self.history_position > 0:
+        self.history_position -= 1
+      self.buffer = self.history[self.history_position]
+      return True
+    elif key == curses.KEY_DOWN:
+      if len(self.history) == 0 or self.history_position is None:
+        return False
+      elif self.history_position < len(self.history) - 1:
+        self.history_position += 1
+        self.buffer = self.history[self.history_position]
+      else:
+        self.buffer = self.history_memory
+        self.history_position = None
+        self.history_memory = ""
       return True
     elif key == ord(":"):
       self.error = ""
@@ -110,7 +141,7 @@ class ElectionWindow(Window):
     for song in self.election.songs:
       rating = " {}:{}".format(song.rating or 'N/A', song.rating_avg)
       line = fixed_width_suffix(song.title, rating, self.width)
-      self.add_line("{}".format(line))
+      self.add_line(line)
       rating = " {}:{}".format(song.album.rating_user or 'N/A',
         song.album.rating_avg)
       line = fixed_width_suffix(song.album.name, rating, self.width)
