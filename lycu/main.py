@@ -3,7 +3,7 @@ import sys
 from gutter.dispatch import receiver
 from gutter.channel import post_sync, pre_sync
 
-from . import lyre
+from . import lyre, ui
 from .ui import RootWindow
 from .context import Context
 
@@ -21,6 +21,7 @@ def on_sync(signal, sender, **kwargs):
 
 def main(stdscr):
   global root
+  ui.init_pairs()
   root = RootWindow(stdscr)
   context.current_channel = lyre.client.channels[0].id
 

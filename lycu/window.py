@@ -27,9 +27,9 @@ class Window(object):
   def cursor(self):
     return self.win.getyx()
 
-  def add_line(self, s):
+  def add_line(self, s, *attr):
     n = self.width - self.cursor[1]
-    self.win.addnstr(s.encode('ascii', 'ignore'), n)
+    self.win.addnstr(s.encode('ascii', 'ignore'), n, *attr)
     if len(s) < n and self.cursor[0] < self.height-1:
       self.next_line()
 
