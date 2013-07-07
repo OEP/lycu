@@ -6,13 +6,14 @@ COMMANDS = {
     "next": "next_channel",
     "goto": "goto_channel",
     "previous": "previous_channel",
-  }
+  },
+  "help": "command_help",
 }
 
 class CommandError(Exception):
   pass
 
-def find_command(cmdparts, context, d):
+def find_command(cmdparts, d):
   if not cmdparts:
     raise CommandError("Expected command or subcommand. Try: {}".format(
       ", ".join(d.keys())))
@@ -28,15 +29,22 @@ def find_command(cmdparts, context, d):
   key = keys[0]
   value = d[key]
   if isinstance(value, dict):
-    return find_command(cmdparts[1:], context, value)
-  fn = eval(value)
-  return fn(context, *cmdparts[1:])
+    return find_command(cmdparts[1:], value)
+  return eval(value), cmdparts[1:]
 
 def execute(command, context):
   parts = shlex.split(command)
   if not parts:
     raise CommandError("No command specified.")
-  return find_command(parts, context, COMMANDS)
+  fn, args = find_command(parts, COMMANDS)
+  return fn(context, *args)
+
+def command_help(context, *args):
+  if args:
+    fn, args = find_command(args, COMMANDS)
+    help(fn)
+  else:
+    help(command_help)
 
 def goto_channel(context, *args):
   if len(args) != 1:
@@ -49,6 +57,7 @@ def goto_channel(context, *args):
     raise CommandError("No channel '{}'. Try: {}".format(
       name, ", ".join(names)))
   if len(chs) > 1:
+    names = [ch.name.lower() for ch in chs]
     raise CommandError("Ambiguous prefix '{}'. Try: {}".format(
       name, ", ".join(names)))
   ch = chs[0]
@@ -66,7 +75,7 @@ def change_channel(context, direction=1, *args):
   ch = [ch for ch in lyre.client.channels if ch.id == context.current_channel]
   ch = ch[0]
   idx = lyre.client.channels.index(ch)
-  if 0 < idx + direction < len(lyre.client.channels):
+  if 0 <= idx + direction < len(lyre.client.channels):
     context.current_channel = lyre.client.channels[idx + direction].id
     return
   raise CommandError("No more channels.")
