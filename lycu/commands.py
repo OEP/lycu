@@ -4,6 +4,7 @@ from . import lyre
 COMMANDS = {
   "channel": {
     "next": "next_channel",
+    "goto": "goto_channel",
     "previous": "previous_channel",
   }
 }
@@ -29,21 +30,39 @@ def find_command(cmdparts, context, d):
   if isinstance(value, dict):
     return find_command(cmdparts[1:], context, value)
   fn = eval(value)
-  return fn(context)
+  return fn(context, *cmdparts[1:])
 
 def execute(command, context):
   parts = shlex.split(command)
   if not parts:
     raise CommandError("No command specified.")
-  return find_command(parts, context, COMMANDS) 
+  return find_command(parts, context, COMMANDS)
 
-def next_channel(context):
+def goto_channel(context, *args):
+  if len(args) != 1:
+    raise CommandError("Try :channel go <name>")
+  names = [x.name.lower() for x in lyre.client.channels]
+  name = args[0]
+  chs = [ch for ch in lyre.client.channels
+    if ch.name.lower().startswith(name.lower())]
+  if not chs:
+    raise CommandError("No channel '{}'. Try: {}".format(
+      name, ", ".join(names)))
+  if len(chs) > 1:
+    raise CommandError("Ambiguous prefix '{}'. Try: {}".format(
+      name, ", ".join(names)))
+  ch = chs[0]
+  context.current_channel = ch.id
+
+def next_channel(context, *args):
   return change_channel(context, 1)
 
-def previous_channel(context):
+def previous_channel(context, *args):
   return change_channel(context, -1)
 
-def change_channel(context, direction=1):
+def change_channel(context, direction=1, *args):
+  if args:
+    raise CommandError("Command takes no arguments.")
   ch = [ch for ch in lyre.client.channels if ch.id == context.current_channel]
   ch = ch[0]
   idx = lyre.client.channels.index(ch)
