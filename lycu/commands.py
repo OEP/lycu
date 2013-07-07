@@ -48,5 +48,6 @@ def change_channel(context, direction=1):
   ch = ch[0]
   idx = lyre.client.channels.index(ch)
   if 0 < idx + direction < len(lyre.client.channels):
-    raise CommandError("No more channels.")
-  context.current_channel = lyre.client.channels[idx + direction].id
+    context.current_channel = lyre.client.channels[idx + direction].id
+    return
+  raise CommandError("No more channels.")
