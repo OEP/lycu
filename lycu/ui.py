@@ -114,6 +114,6 @@ class ElectionWindow(Window):
       rating = " {}:{}".format(song.album.rating_user or 'N/A',
         song.album.rating_avg)
       line = fixed_width_suffix(song.album.name, rating, self.width)
-      self.add_line("{}".format(line))
+      self.add_line(line)
       self.add_line(", ".join([x.name for x in song.artists]))
       self.next_line()

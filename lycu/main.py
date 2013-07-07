@@ -5,7 +5,7 @@ from gutter.channel import post_sync, pre_sync
 
 from . import lyre, ui
 from .ui import RootWindow
-from .context import Context
+from .context import Context, context_changed
 
 root = None
 context = Context.get_default()
@@ -18,6 +18,10 @@ def on_sync(signal, sender, **kwargs):
     with open('lycu.log', 'w') as fp:
       import traceback
       traceback.print_exc(None, fp)
+
+@receiver(context_changed)
+def on_context_changed(signal, sender, **kwargs):
+  root.repaint(sender)
 
 def main(stdscr):
   global root
